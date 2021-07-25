@@ -189,3 +189,66 @@ export function form_rpn(tree) {
     return tree;
   }
 }
+
+export function evaluate(ast, ctx = {}) {
+  if (ast instanceof Object) {
+    switch (ast.op) {
+      case '∨':
+        return evaluate(ast.args[0], ctx) || evaluate(ast.args[1], ctx);
+      case '∧':
+        return evaluate(ast.args[0], ctx) && evaluate(ast.args[1], ctx);
+      case '¬':
+        return !evaluate(ast.args[0], ctx);
+      case '→':
+        return !evaluate(ast.args[0], ctx) || evaluate(ast.args[1], ctx);
+      case '↔':
+        return evaluate(ast.args[0], ctx) == evaluate(ast.args[1], ctx);
+      case '←':
+        return !evaluate(ast.args[1], ctx) || evaluate(ast.args[0], ctx);
+      default:
+        return false;
+    }
+  } else {
+    if (ast in ctx) {
+      return ctx[ast];
+    } else if (ast == '1') {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+function find_symbols(ast) {
+  if (ast instanceof Object) {
+    return ast.args.flatMap((a) => find_symbols(a));
+  } else if (ast != '1' && ast != '0') {
+    return [ast];
+  } else {
+    return [];
+  }
+}
+
+export function create_truth_table(ast) {
+  const symbols = find_symbols(ast).filter(
+    (sym, i, arr) => arr.indexOf(sym) == i
+  );
+  if (symbols.length == 0) {
+    return { inputs: [], body: [{ inputs: [], output: evaluate(ast) }] };
+  } else if (symbols.length <= 4) {
+    const body = [];
+    for (let i = 0; i < 2 ** symbols.length; i++) {
+      const context = {};
+      const inputs = [];
+      symbols.forEach((sym, bit) => {
+        let input = (i & (1 << bit)) != 0;
+        context[sym] = input;
+        inputs.push(input);
+      });
+      body.push({ inputs, output: evaluate(ast, context) });
+    }
+    return { inputs: symbols, body };
+  } else {
+    return { inputs: [], body: [] };
+  }
+}

@@ -1,5 +1,6 @@
 <script>
-  import { parse, form_rpn } from './parser';
+  import { parse, form_rpn, create_truth_table } from './parser';
+  import TruthTable from './TruthTable.svelte';
 
   let input = '¬P or P and not Q ) <-> P implies Q';
   $: parser = parse(input);
@@ -17,6 +18,8 @@
     {:then output}
       <code>{form_rpn(output)}</code>
       <pre><code>{JSON.stringify(output, undefined, 2)}</code></pre>
+
+      <TruthTable table={create_truth_table(output)} />
     {:catch error}
       <code class="error">{error}</code>
     {/await}

@@ -186,6 +186,9 @@ export function form_rpn(tree) {
 
     return result.join('');
   } else {
+    if (tree.length > 1) {
+      return `"${tree}"`
+    }
     return tree;
   }
 }

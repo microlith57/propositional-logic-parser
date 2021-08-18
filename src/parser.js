@@ -246,7 +246,7 @@ export function create_truth_table(ast) {
       symbols.forEach((sym, bit) => {
         let input = (i & (1 << bit)) != 0;
         context[sym] = input;
-        inputs.push(input);
+        inputs.unshift(input);
       });
       body.push({ inputs, output: evaluate(ast, context) });
     }
